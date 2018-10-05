@@ -45,16 +45,25 @@ class Db
         $stmt = $conn->prepare("SELECT * FROM " . $tableName . " WHERE Id = ?");
         $stmt->bind_param("s", $id);
         $stmt->execute();
-        $stmt->store_result();
-
-        if ($stmt->num_rows > 0) {
-            $stmt->bind_result($ID, $FirstName, $LastName, $Email);
-            $stmt->fetch();
-
-            echo $FirstName; // Outputs the first name
-        }
+        $records = $stmt->get_result();
 
         $stmt->close();
         $conn->close();
+
+        if($records->num_rows != 1){
+            return null;
+        }
+
+        foreach($records as $record){
+            $class = new $className();
+
+            $properties = get_object_vars($class);
+            foreach($properties as $name => $value)
+            {
+                $class->$name = $record[$name];
+            }
+
+            return $class;
+        }
     }
 }
