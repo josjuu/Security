@@ -1,5 +1,13 @@
 <?php
 
+/**
+ * Class Db
+ *
+ * @author Jos Mutter
+ * @since 05-10-2018
+ *
+ * This class will handle the database related methods, but only generic methods.
+ */
 class Db
 {
     /**
