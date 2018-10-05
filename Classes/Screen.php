@@ -1,13 +1,13 @@
 <?php
 
-class Movie extends DbTable
+class Screen extends DbTable
 {
     public $Id;
+    public $LocationId;
     public $Name;
-    public $PegiRating;
-    public $Length;
-    public $ReleaseDate;
-    public $Expiration;
+    public $Rows;
+    public $SeatsPerRow;
+    public $ScreenQuality;
 
     public function __construct(Array $properties=array()){
         parent::__construct($properties);

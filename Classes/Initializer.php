@@ -2,3 +2,9 @@
 include_once 'Db.php';
 include_once 'DbTable.php';
 include_once 'Movie.php';
+include_once 'Location.php';
+include_once 'MovieTime.php';
+include_once 'Price.php';
+include_once 'Screen.php';
+include_once 'Staff.php';
+include_once 'Ticket.php';

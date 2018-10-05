@@ -1,13 +1,11 @@
 <?php
 
-class Movie extends DbTable
+class Price extends DbTable
 {
     public $Id;
     public $Name;
-    public $PegiRating;
-    public $Length;
-    public $ReleaseDate;
-    public $Expiration;
+    public $PrimeTimePrice;
+    public $NormalPrice;
 
     public function __construct(Array $properties=array()){
         parent::__construct($properties);
