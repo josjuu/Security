@@ -2,12 +2,18 @@
 
 class Db
 {
-    public static function getAllRecords($tableName, $className)
-    {
+    public static function getConnection(){
         $conn = new mysqli('localhost', 'root', '', 'josmutter_movies');
         if ($conn->connect_error) {
             die("Connection failed: " . $conn->connect_error);
         }
+
+        return $conn;
+    }
+
+    public static function getAllRecords($tableName, $className)
+    {
+        $conn = self::getConnection();
 
         $stmt = $conn->prepare("SELECT * FROM " . $tableName);
         $stmt->execute();
@@ -31,10 +37,7 @@ class Db
     }
 
     public static function getSingleRecord($tableName, $className, $id){
-        $conn = new mysqli('localhost', 'root', '', 'josmutter_movies');
-        if ($conn->connect_error) {
-            die("Connection failed: " . $conn->connect_error);
-        }
+        $conn = self::getConnection();
 
         $stmt = $conn->prepare("SELECT * FROM " . $tableName . " WHERE Id = ?");
         $stmt->bind_param("s", $id);
