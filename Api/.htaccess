@@ -1,6 +1,10 @@
 RewriteEngine on
+
 RewriteRule ^Movies?$ Movies/index.php
 RewriteRule ^Movies/([0-9]+) Movies/index.php?id=$1
 
 RewriteRule ^Locations?$ Locations/index.php
 RewriteRule ^Locations/([0-9]+) Locations/index.php?id=$1
+
+RewriteRule ^MovieTimes?$ MovieTimes/index.php
+RewriteRule ^MovieTimes/([0-9]+) MovieTimes/index.php?id=$1
