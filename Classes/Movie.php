@@ -6,7 +6,7 @@
  * Time: 13:26
  */
 
-class Movie
+class Movie extends DbTable
 {
     public $Id;
     public $Name;
@@ -16,8 +16,6 @@ class Movie
     public $Expiration;
 
     public function __construct(Array $properties=array()){
-        foreach($properties as $key => $value){
-            $this->{$key} = $value;
-        }
+        parent::__construct($properties);
     }
 }
