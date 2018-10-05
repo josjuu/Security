@@ -14,3 +14,9 @@ RewriteRule ^Prices/([0-9]+) Prices/index.php?id=$1
 
 RewriteRule ^Screens?$ Screens/index.php
 RewriteRule ^Screens/([0-9]+) Screens/index.php?id=$1
+
+RewriteRule ^Staff?$ Staff/index.php
+RewriteRule ^Staff/([0-9]+) Staff/index.php?id=$1
+
+RewriteRule ^Tickets?$ Tickets/index.php
+RewriteRule ^Tickets/([0-9]+) Tickets/index.php?id=$1

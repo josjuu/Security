@@ -6,3 +6,5 @@ include_once 'Location.php';
 include_once 'MovieTime.php';
 include_once 'Price.php';
 include_once 'Screen.php';
+include_once 'Staff.php';
+include_once 'Ticket.php';
