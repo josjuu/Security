@@ -102,4 +102,50 @@ class Db
             return $class;
         }
     }
+
+    /**
+     * Updates a single record of the given table.
+     *
+     * @param $tableName
+     *      The name of the table.
+     * @param $object
+     *      The object you wish to update.
+     * @throws NotSetException
+     *      Throws an exception if an important field is not set or is null.
+     */
+    public static function updateRecord($tableName, $object)
+    {
+        if ($tableName == "" || $tableName == null || $object == null || $object->Id == null || $object->Id <= 0) {
+            throw new NotSetException("Some fields are not set or null");
+        }
+
+        $db = self::getConnection();
+        foreach ($object as $column => $value) {
+            echo "$column = $value<br>";
+            $stmt = $db->prepare("UPDATE $tableName SET $column = ? WHERE Id = {$object->Id}");
+            $stmt->bind_param("s", $value);
+            $stmt->execute();
+            $stmt->close();
+        }
+        $db->close();
+    }
+
+    /**
+     * Updates multiple records from the given table
+     *
+     * @param $tableName
+     *      The name of the table
+     * @param $objects
+     *      An array of objects of wish you want to update.
+     */
+    public static function updateRecords($tableName, $objects)
+    {
+        foreach ($objects as $object) {
+            try {
+                self::updateRecord($tableName, $object);
+            } catch (NotSetException $e) {
+                echo $e->__toString();
+            }
+        }
+    }
 }
