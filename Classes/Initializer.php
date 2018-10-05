@@ -5,3 +5,4 @@ include_once 'Movie.php';
 include_once 'Location.php';
 include_once 'MovieTime.php';
 include_once 'Price.php';
+include_once 'Screen.php';
