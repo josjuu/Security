@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Jos Mutter
- * Date: 05/10/2018
- * Time: 18:20
- */
 
 class Screen extends DbTable
 {

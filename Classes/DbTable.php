@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: josmu
- * Date: 05/10/2018
- * Time: 14:23
- */
 
 class DbTable
 {

@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Jos Mutter
- * Date: 05/10/2018
- * Time: 18:34
- */
 
 class Ticket extends DbTable
 {
