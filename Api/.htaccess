@@ -8,3 +8,6 @@ RewriteRule ^Locations/([0-9]+) Locations/index.php?id=$1
 
 RewriteRule ^MovieTimes?$ MovieTimes/index.php
 RewriteRule ^MovieTimes/([0-9]+) MovieTimes/index.php?id=$1
+
+RewriteRule ^Prices?$ Prices/index.php
+RewriteRule ^Prices/([0-9]+) Prices/index.php?id=$1
