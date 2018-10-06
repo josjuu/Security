@@ -14,3 +14,27 @@ class NotSetException extends Exception
         return $message;
     }
 }
+
+class ConnectionFailedException extends Exception
+{
+    public $password;
+    public $username;
+    public $dsn;
+
+    public function __toString()
+    {
+        $message = "<b>Error:</b> $this->message.<br>";
+        $message .= "This exception occurred at $this->file:$this->line.<br><br>";
+
+        return $message;
+    }
+
+    public function getExtraDataMessage()
+    {
+        $message = "<b>Error:</b> $this->message.<br>";
+        $message .= "Dsn: '$this->dsn', username: '$this->username', password: '$this->password'<br>";
+        $message .= "This exception occurred at $this->file:$this->line.<br><br>";
+
+        return $message;
+    }
+}

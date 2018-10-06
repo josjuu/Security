@@ -13,17 +13,27 @@ class Db
     /**
      * Gets a connection with the database.
      *
-     * @return mysqli
+     * @return PDO
      *      Returns an active connection with the database.
+     * @throws ConnectionFailedException
+     *      Throws an exception if it fails to connect.
      */
     public static function getConnection()
     {
-        $conn = new mysqli('localhost', 'root', '', 'josmutter_movies');
-        if ($conn->connect_error) {
-            die("Connection failed: " . $conn->connect_error);
-        }
+        $dsn = "mysql:dbname=josmutter_movies;host=localhost";
+        $username = "root";
+        $password = "";
 
-        return $conn;
+        try {
+            $conn = new PDO($dsn, $username, $password);
+            return $conn;
+        } catch (PDOException $e) {
+            $exception = new ConnectionFailedException("Failed to connect to the database");
+            $exception->dsn = $dsn;
+            $exception->username = $username;
+            $exception->password = $password;
+            throw $exception;
+        }
     }
 
     /**
@@ -35,31 +45,32 @@ class Db
      * @param $className
      *      The name of the class name that represents a record in the database.
      * @return array|null
-     *      Returns a array of the given class. Or returns null if there were no records found in the table.
+     *      Returns a array of the given class.
+     *      Or returns null if there were no records found in the table or the connection failed.
      */
     public static function getAllRecords($tableName, $className)
     {
-        $conn = self::getConnection();
-
-        $stmt = $conn->prepare("SELECT * FROM " . $tableName);
-        $stmt->execute();
-        $records = $stmt->get_result();
-
-        $stmt->close();
-        $conn->close();
-
-        if ($records->num_rows <= 0) {
+        try {
+            $db = self::getConnection();
+        } catch (ConnectionFailedException $e) {
+            echo $e->__toString();
             return null;
         }
 
-        $classes = Array();
+        $stmt = $db->prepare("SELECT * FROM " . $tableName);
+        $stmt->execute();
 
-        foreach ($records as $record) {
-            $class = new $className($record);
-            array_push($classes, $class);
+        if ($stmt->rowCount() <= 0) {
+            return null;
         }
 
-        return $classes;
+        $stmt->setFetchMode(PDO::FETCH_INTO, new $className());
+        $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $sth = null;
+        $dbh = null;
+
+        return $records;
     }
 
     /**
@@ -77,30 +88,80 @@ class Db
      */
     public static function getSingleRecord($tableName, $className, $id)
     {
-        $conn = self::getConnection();
-
-        $stmt = $conn->prepare("SELECT * FROM " . $tableName . " WHERE Id = ?");
-        $stmt->bind_param("s", $id);
-        $stmt->execute();
-        $records = $stmt->get_result();
-
-        $stmt->close();
-        $conn->close();
-
-        if ($records->num_rows != 1) {
+        try {
+            $db = self::getConnection();
+        } catch (ConnectionFailedException $e) {
+            echo $e->__toString();
             return null;
         }
 
-        foreach ($records as $record) {
-            $class = new $className();
+        $stmt = $db->prepare("SELECT * FROM " . $tableName . " WHERE Id = ?");
+        $stmt->bindParam(1, $id);
+        $stmt->execute();
 
-            $properties = get_object_vars($class);
-            foreach ($properties as $name => $value) {
-                $class->$name = $record[$name];
-            }
-
-            return $class;
+        if ($stmt->rowCount() != 1) {
+            return null;
         }
+
+        $stmt->setFetchMode(PDO::FETCH_INTO, new $className());
+        $record = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        $sth = null;
+        $dbh = null;
+
+        return $record;
+    }
+
+    /**
+     * Adds a single record to the given table.
+     *
+     * @param $tableName
+     *      The name of the table.
+     * @param $object
+     *      The object you wish to add.
+     */
+    public static function addRecord($tableName, $object)
+    {
+        //Creates an array of the object and removes the Id.
+        $object = (Array)$object;
+        unset($object["Id"]);
+
+        //Initializing variables
+        $columnNames = Array();
+        $values = Array();
+        $amountOfQuestionmarks = 0;
+        $columns = "";
+        $questionmarks = "";
+
+        //Setting variables
+        foreach ($object as $column => $value) {
+            $amountOfQuestionmarks++;
+            array_push($values, $value);
+            array_push($columnNames, $column);
+        }
+
+        //Setting the strings
+        for ($i = 0; $i < $amountOfQuestionmarks; $i++) {
+            $columns .= $i != 0 ? ", $columnNames[$i]" : $columnNames[$i];
+            $questionmarks .= $i != 0 ? ", ?" : "?";
+        }
+
+        $sql = "INSERT INTO $tableName ($columns) VALUES ($questionmarks)";
+
+        try {
+            $db = self::getConnection();
+        } catch (ConnectionFailedException $e) {
+            echo $e->__toString();
+            return;
+        }
+
+        $stmt = $db->prepare($sql);
+
+        for ($i = 0; $i < $amountOfQuestionmarks; $i++) {
+            $stmt->bindParam($i + 1, $values[$i], PDO::PARAM_STR);
+        }
+
+        $stmt->execute();
     }
 
     /**
@@ -112,6 +173,8 @@ class Db
      *      The object you wish to update.
      * @throws NotSetException
      *      Throws an exception if an important field is not set or is null.
+     * @throws ConnectionFailedException
+     *      Throws an exception if the connection failed.
      */
     public static function updateRecord($tableName, $object)
     {
@@ -119,15 +182,19 @@ class Db
             throw new NotSetException("Some fields are not set or null");
         }
 
-        $db = self::getConnection();
-        foreach ($object as $column => $value) {
-            echo "$column = $value<br>";
-            $stmt = $db->prepare("UPDATE $tableName SET $column = ? WHERE Id = {$object->Id}");
-            $stmt->bind_param("s", $value);
-            $stmt->execute();
-            $stmt->close();
+        try {
+            $db = self::getConnection();
+        } catch (ConnectionFailedException $e) {
+            throw $e;
         }
-        $db->close();
+
+        foreach ($object as $column => $value) {
+            $stmt = $db->prepare("UPDATE $tableName SET $column = ? WHERE Id = {$object->Id}");
+            $stmt->bindParam(1, $value);
+            $stmt->execute();
+            $stmt = null;
+        }
+        $db = null;
     }
 
     /**
@@ -140,12 +207,16 @@ class Db
      */
     public static function updateRecords($tableName, $objects)
     {
-        foreach ($objects as $object) {
-            try {
-                self::updateRecord($tableName, $object);
-            } catch (NotSetException $e) {
-                echo $e->__toString();
+        try {
+            foreach ($objects as $object) {
+                try {
+                    self::updateRecord($tableName, $object);
+                } catch (NotSetException $e) {
+                    echo $e->__toString();
+                }
             }
+        } catch (ConnectionFailedException $e) {
+            echo $e->__toString();
         }
     }
 }
