@@ -103,6 +103,46 @@ class Db
         }
     }
 
+    function insert($tableName, $object)
+    {
+        $db = Db::getConnection();
+        foreach ($object as $column => $value) {
+            $sql = "INSERT INTO {$tableName} ({$column}) VALUES (:{$column});";
+            $stmt = $db->prepare($sql);
+            $stmt->execute(array(':' . $column => $value));
+            $stmt->close();
+        }
+        $db->close();
+    }
+
+//    $table = "accounts";
+//    $data = array("fname" => "ahmed");
+//
+//    insert($table, $data);
+
+    public static function addRecord($tableName, $object)
+    {
+        $fields = "";
+        $values = "";
+
+        foreach ($object as $column => $value) {
+            if ($column == "Id") {
+                continue;
+            }
+
+            if ($fields != "" && $values != "") {
+                $fields .= ", ";
+                $values .= ", ";
+            }
+
+            $fields .= $column;
+            $values .= "?";
+        }
+
+        $sql = "INSERT INTO $tableName ($fields) VALUES ($values)";
+        echo $sql;
+    }
+
     /**
      * Updates a single record of the given table.
      *
