@@ -194,13 +194,12 @@ class Db
         }
 
         foreach ($object as $column => $value) {
-            echo "$column = $value<br>";
             $stmt = $db->prepare("UPDATE $tableName SET $column = ? WHERE Id = {$object->Id}");
-            $stmt->bind_param("s", $value);
+            $stmt->bindParam(1, $value);
             $stmt->execute();
-            $stmt->close();
+            $stmt = null;
         }
-        $db->close();
+        $db = null;
     }
 
     /**
