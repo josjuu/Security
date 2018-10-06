@@ -103,44 +103,53 @@ class Db
         }
     }
 
-    function insert($tableName, $object)
-    {
-        $db = Db::getConnection();
-        foreach ($object as $column => $value) {
-            $sql = "INSERT INTO {$tableName} ({$column}) VALUES (:{$column});";
-            $stmt = $db->prepare($sql);
-            $stmt->execute(array(':' . $column => $value));
-            $stmt->close();
-        }
-        $db->close();
-    }
-
-//    $table = "accounts";
-//    $data = array("fname" => "ahmed");
-//
-//    insert($table, $data);
-
+    /**
+     * Adds a single record to the given table.
+     *
+     * @param $tableName
+     *      The name of the table.
+     * @param $object
+     *      The object you wish to add.
+     */
     public static function addRecord($tableName, $object)
     {
-        $fields = "";
-        $values = "";
+        //Creates an array of the object and removes the Id.
+        $object = (Array)$object;
+        unset($object["Id"]);
 
+        //Initializing variables
+        $columnNames = Array();
+        $values = Array();
+        $amountOfQuestionmarks = 0;
+        $columns = "";
+        $questionmarks = "";
+
+        //Setting variables
         foreach ($object as $column => $value) {
-            if ($column == "Id") {
-                continue;
-            }
-
-            if ($fields != "" && $values != "") {
-                $fields .= ", ";
-                $values .= ", ";
-            }
-
-            $fields .= $column;
-            $values .= "?";
+            $amountOfQuestionmarks++;
+            array_push($values, $value);
+            array_push($columnNames, $column);
         }
 
-        $sql = "INSERT INTO $tableName ($fields) VALUES ($values)";
+        //Setting the strings
+        for ($i = 0; $i < $amountOfQuestionmarks; $i++) {
+            $columns .= $i != 0 ? ", $columnNames[$i]" : $columnNames[$i];
+            $questionmarks .= $i != 0 ? ", ?" : "?";
+        }
+
+        $sql = "INSERT INTO $tableName ($columns) VALUES ($questionmarks)";
+
         echo $sql;
+
+        $db = new PDO('mysql:host=localhost;dbname=josmutter_movies', 'root', '');
+        $stmt = $db->prepare($sql);
+
+        for ($i = 0; $i < $amountOfQuestionmarks; $i++) {
+            $stmt->bindParam($i + 1, $values[$i], PDO::PARAM_STR);
+        }
+
+        $stmt->execute();
+
     }
 
     /**

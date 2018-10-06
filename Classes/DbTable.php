@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * Class DbTable
+ */
 class DbTable
 {
     public function __construct(Array $properties=array()){
