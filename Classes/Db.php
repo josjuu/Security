@@ -20,7 +20,7 @@ class Db
      */
     public static function getConnection()
     {
-        $dsn = "mysql:dbname=sjosmutter_movies;host=localhost";
+        $dsn = "mysql:dbname=josmutter_movies;host=localhost";
         $username = "root";
         $password = "";
 
@@ -59,14 +59,15 @@ class Db
 
         $stmt = $db->prepare("SELECT * FROM " . $tableName);
         $stmt->execute();
-        $records = $stmt->get_result();
 
-        $stmt->close();
-        $db->close();
-
-        if ($records->num_rows <= 0) {
+        if ($stmt->rowCount() <= 0) {
             return null;
         }
+
+        $records = $stmt->fetchAll();
+
+        $sth = null;
+        $dbh = null;
 
         $classes = Array();
 
