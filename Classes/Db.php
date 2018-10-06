@@ -64,7 +64,7 @@ class Db
             return null;
         }
 
-        $records = $stmt->fetchAll();
+        $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $sth = null;
         $dbh = null;
@@ -72,8 +72,7 @@ class Db
         $classes = Array();
 
         foreach ($records as $record) {
-            $class = new $className($record);
-            array_push($classes, $class);
+            array_push($classes, new $className($record));
         }
 
         return $classes;
@@ -102,27 +101,19 @@ class Db
         }
 
         $stmt = $db->prepare("SELECT * FROM " . $tableName . " WHERE Id = ?");
-        $stmt->bind_param("s", $id);
+        $stmt->bindParam(1, $id);
         $stmt->execute();
-        $records = $stmt->get_result();
 
-        $stmt->close();
-        $db->close();
-
-        if ($records->num_rows != 1) {
+        if ($stmt->rowCount() != 1) {
             return null;
         }
 
-        foreach ($records as $record) {
-            $class = new $className();
+        $record = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            $properties = get_object_vars($class);
-            foreach ($properties as $name => $value) {
-                $class->$name = $record[$name];
-            }
+        $sth = null;
+        $dbh = null;
 
-            return $class;
-        }
+        return new $className($record);
     }
 
     /**
