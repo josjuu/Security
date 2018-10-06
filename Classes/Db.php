@@ -64,18 +64,13 @@ class Db
             return null;
         }
 
+        $stmt->setFetchMode(PDO::FETCH_INTO, new $className());
         $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $sth = null;
         $dbh = null;
 
-        $classes = Array();
-
-        foreach ($records as $record) {
-            array_push($classes, new $className($record));
-        }
-
-        return $classes;
+        return $records;
     }
 
     /**
@@ -108,12 +103,13 @@ class Db
             return null;
         }
 
+        $stmt->setFetchMode(PDO::FETCH_INTO, new $className());
         $record = $stmt->fetch(PDO::FETCH_ASSOC);
 
         $sth = null;
         $dbh = null;
 
-        return new $className($record);
+        return $record;
     }
 
     /**
@@ -166,7 +162,6 @@ class Db
         }
 
         $stmt->execute();
-
     }
 
     /**
