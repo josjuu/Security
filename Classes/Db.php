@@ -44,24 +44,22 @@ class Db
      *      The name of the table in the database.
      * @param $className
      *      The name of the class name that represents a record in the database.
-     * @return array|null
+     * @return array
      *      Returns a array of the given class.
-     *      Or returns null if there were no records found in the table or the connection failed.
+     * @throws ConnectionFailedException
+     *      Throws an exception if it failed to connect to the database.
+     * @throws NullException
+     *      Throws an exception if there were no records found in the table.
      */
     public static function getAllRecords($tableName, $className)
     {
-        try {
-            $db = self::getConnection();
-        } catch (ConnectionFailedException $e) {
-            echo $e->__toString();
-            return null;
-        }
+        $db = self::getConnection();
 
         $stmt = $db->prepare("SELECT * FROM " . $tableName);
         $stmt->execute();
 
         if ($stmt->rowCount() <= 0) {
-            return null;
+            throw new NullException("No records found.");
         }
 
         $stmt->setFetchMode(PDO::FETCH_INTO, new $className());
@@ -84,23 +82,24 @@ class Db
      * @param $id
      *      The id of the record you want to get.
      * @return object|null
-     *      Returns a object of the given table and id. It can return null if nothing was found or more than 1 was found.
+     *      Returns a object of the given table and id.
+     * @throws ConnectionFailedException
+     *      Throws an exception if it failed to connect to the database.
+     * @throws NullException
+     *      Throws an exception if there was no record or more than 1 records.
      */
     public static function getSingleRecord($tableName, $className, $id)
     {
-        try {
-            $db = self::getConnection();
-        } catch (ConnectionFailedException $e) {
-            echo $e->__toString();
-            return null;
-        }
+        $db = self::getConnection();
 
         $stmt = $db->prepare("SELECT * FROM " . $tableName . " WHERE Id = ?");
         $stmt->bindParam(1, $id);
         $stmt->execute();
 
-        if ($stmt->rowCount() != 1) {
-            return null;
+        if ($stmt->rowCount() < 1) {
+            throw new NullException("No record found.");
+        } else if ($stmt->rowCount() > 1) {
+            throw  new NullException("Multiple records found");
         }
 
         $stmt->setFetchMode(PDO::FETCH_INTO, new $className());
