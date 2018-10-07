@@ -4,8 +4,6 @@
  * Date: 05/10/2018
  */
 
-//TODO: Standardized exception messages.
-
 class NotSetException extends Exception
 {
     public function __toString()
