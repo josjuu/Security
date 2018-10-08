@@ -1,6 +1,6 @@
 <?php
 
-class Location extends DbTable
+class Location
 {
     public $Id;
     public $Street;
@@ -9,8 +9,4 @@ class Location extends DbTable
     public $PostalCode;
     public $Telephone;
     public $Email;
-
-    public function __construct(Array $properties=array()){
-        parent::__construct($properties);
-    }
 }

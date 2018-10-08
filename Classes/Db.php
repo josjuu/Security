@@ -67,8 +67,8 @@ class Db
         $stmt->setFetchMode(PDO::FETCH_INTO, new $className());
         $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        $sth = null;
-        $dbh = null;
+        $stmt = null;
+        $db = null;
 
         return $records;
     }
@@ -106,8 +106,8 @@ class Db
         $stmt->setFetchMode(PDO::FETCH_INTO, new $className());
         $record = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $sth = null;
-        $dbh = null;
+        $stmt = null;
+        $db = null;
 
         return $record;
     }

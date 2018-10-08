@@ -1,6 +1,6 @@
 <?php
 
-class Screen extends DbTable
+class Screen
 {
     public $Id;
     public $LocationId;
@@ -8,8 +8,4 @@ class Screen extends DbTable
     public $Rows;
     public $SeatsPerRow;
     public $ScreenQuality;
-
-    public function __construct(Array $properties=array()){
-        parent::__construct($properties);
-    }
 }

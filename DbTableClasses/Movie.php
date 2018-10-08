@@ -1,6 +1,6 @@
 <?php
 
-class Movie extends DbTable
+class Movie
 {
     public $Id;
     public $Name;
@@ -9,7 +9,7 @@ class Movie extends DbTable
     public $ReleaseDate;
     public $Expiration;
 
-    public function __construct(Array $properties=array()){
-        parent::__construct($properties);
-    }
+//    public function __construct(Array $properties=array()){
+//        parent::__construct($properties);
+//    }
 }

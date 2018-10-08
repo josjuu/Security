@@ -1,6 +1,6 @@
 <?php
 
-class Staff extends DbTable
+class Staff
 {
     public $Id;
     public $LocationId;
@@ -14,8 +14,4 @@ class Staff extends DbTable
     public $HouseNumber;
     public $City;
     public $PostalCode;
-
-    public function __construct(Array $properties=array()){
-        parent::__construct($properties);
-    }
 }
