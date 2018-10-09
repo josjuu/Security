@@ -118,6 +118,8 @@ class Db
      *      The name of the table.
      * @param $object
      *      The object you wish to add.
+     * @throws ConnectionFailedException
+     *      Throws an exception if it fails to connect with the database.
      */
     public static function addRecord($tableName, $object)
     {
@@ -150,8 +152,7 @@ class Db
         try {
             $db = self::getConnection();
         } catch (ConnectionFailedException $e) {
-            echo $e->__toString();
-            return;
+            throw $e;
         }
 
         $stmt = $db->prepare($sql);
@@ -203,6 +204,10 @@ class Db
      *      The name of the table
      * @param $objects
      *      An array of objects of wish you want to update.
+     * @throws ConnectionFailedException
+     *      Throws an exception if the connection failed.
+     * @throws NotSetException
+     *      Throws an exception if an important field is not set or is null.
      */
     public static function updateRecords($tableName, $objects)
     {
@@ -211,11 +216,54 @@ class Db
                 try {
                     self::updateRecord($tableName, $object);
                 } catch (NotSetException $e) {
-                    echo $e->__toString();
+                    throw $e;
                 }
             }
         } catch (ConnectionFailedException $e) {
-            echo $e->__toString();
+            throw $e;
+        }
+    }
+
+    /**
+     * Deletes a single record out of the given table.
+     *
+     * @param $tableName
+     *      The name of the table of which you want to delete the record.
+     * @param $id
+     *      The id of the record you want to delete.
+     * @throws ConnectionFailedException
+     *      Throws an exception if the connection failed.
+     */
+    public static function deleteRecord($tableName, $id)
+    {
+        $db = self::getConnection();
+
+        $stmt = $db->prepare("DELETE FROM $tableName WHERE Id= ?");
+        $stmt->bindParam(1, $id);
+        $stmt->execute();
+
+        $stmt = null;
+        $db = null;
+    }
+
+    /**
+     * Deletes multiple records out of the given table.
+     *
+     * @param $tableName
+     *      The if of the record you want to delete.
+     * @param $ids
+     *      An array of ids of which you want to delete.
+     * @throws ConnectionFailedException
+     *      Throws an exception if the connection failed.
+     */
+    public static function deleteRecords($tableName, $ids)
+    {
+        try {
+            foreach ($ids as $id) {
+                self::deleteRecord($tableName, $id);
+            }
+        } catch (ConnectionFailedException $e) {
+            throw $e;
         }
     }
 }
