@@ -1,6 +1,28 @@
 <?php
 include_once '../../Classes/Initializer.php';
 
+$authentication = new Authentication();
+$origin = $authentication->getHeaders()["Origin"];
+
+try {
+    $authentication->setDomainById($origin);
+} catch (NullException $e) {
+    echo ResponseJson::createFailedResponseMessage("Origin not found.");
+    exit();
+} catch (Exception $e) {
+    echo ResponseJson::createFailedResponseMessage($e->getMessage());
+    exit();
+}
+
+$response = $authentication->verifyAll();
+
+if (isset($response)) {
+    echo $response;
+    exit();
+}
+
+//exit();
+
 if (isset($_GET["id"])) {
     try {
         $data = Db::getSingleRecord("movies", "Movie", $_GET["id"]);
