@@ -90,24 +90,41 @@ class Db
      */
     public static function getSingleRecord($tableName, $className, $id)
     {
+        return self::getSingleRecordByField($tableName, $className, "Id", $id);
+    }
+
+    /**
+     * Gets a single record of the given table by the id.
+     * Serializes the record in the given class.
+     *
+     * @param $tableName
+     *      The name of the table in the database.
+     * @param $className
+     *      The name of the class that represents a record in the database.
+     * @param $field
+     *      The name of the field of the value.
+     * @param $value
+     *      The value of the field.
+     * @return object|null
+     *      Returns a object of the given table and field and value.
+     * @throws ConnectionFailedException
+     *      Throws an exception if it failed to connect to the database.
+     * @throws NullException
+     *      Throws an exception if there was no record or more than 1 records.
+     */
+    public static function getSingleRecordByField($tableName, $className, $field, $value)
+    {
         $db = self::getConnection();
-
-        $stmt = $db->prepare("SELECT * FROM " . $tableName . " WHERE Id = ?");
-        $stmt->bindParam(1, $id);
+        $stmt = $db->prepare("SELECT * FROM " . $tableName . " WHERE $field = ? LIMIT 1");
+        $stmt->bindParam(1, $value);
         $stmt->execute();
-
-        if ($stmt->rowCount() < 1) {
+        if ($stmt->rowCount() != 1) {
             throw new NullException("No record found.");
-        } else if ($stmt->rowCount() > 1) {
-            throw  new NullException("Multiple records found");
         }
-
         $stmt->setFetchMode(PDO::FETCH_INTO, new $className());
         $record = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        $stmt = null;
-        $db = null;
-
+        $sth = null;
+        $dbh = null;
         return $record;
     }
 
