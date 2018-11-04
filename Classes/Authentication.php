@@ -12,7 +12,7 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 class Authentication
 {
     private $domain;
-    private $headers;
+    public $headers;
 
     public function __construct()
     {
@@ -23,54 +23,43 @@ class Authentication
 
     /**
      * Checks if all authentication is set.
-     *
-     * @return string
-     *      If it failes to get through to the authentication then it returns a response json. Otherwise null.
      */
-    public function verifyAll()
+    public function verifyApiKey()
     {
-        $apiKey = $this->getHeaders()["ApiKey"];
+        $apiKey = $this->headers["ApiKey"];
+        $response = null;
 
         try {
             if (!$this->checkApiKey($apiKey)) {
-                return ResponseJson::createFailedResponseMessage("Api key was incorrect");
+                $response = ResponseJson::createFailedResponseMessage("Api key was incorrect");
             }
         } catch (Exception $e) {
-            return ResponseJson::createFailedResponseMessage($e->getMessage());
+            $response = ResponseJson::createFailedResponseMessage($e->getMessage());
         }
 
-        return null;
+        if (isset($response)) {
+            echo $response;
+            exit();
+        }
     }
 
-    /**
-     * Checks if the api key from the user is the same as the key in the database.
-     * NOTE: Domain must be set.
-     *
-     * @param $userKey
-     *      The api key from the user.
-     * @return bool
-     *      Returns true if the id is the same. Otherwise it returns false.
-     * @throws NullException
-     *      Throws an exception if the domain is not set.
-     */
-    public function checkApiKey($userKey)
+    public function verifyLevel()
     {
-        if ($this->getDomain() == null) {
-            Throw new NullException("Domain has not been set.");
+        $restMethod = $_SERVER['REQUEST_METHOD'];
+        $response = null;
+
+        try {
+            if (!$this->checkLevel($restMethod)) {
+                $response = ResponseJson::createFailedResponseMessage("No authorization for this request");
+            }
+        } catch (NullException $e) {
+            $response = ResponseJson::createFailedResponseMessage($e->getMessage());
         }
 
-        return $this->getDomain()["ApiKey"] == $userKey;
-    }
-
-    /**
-     * Gets the headers.
-     *
-     * @return array
-     *      Returns the headers in an array.
-     */
-    public function getHeaders()
-    {
-        return $this->headers;
+        if (isset($response)) {
+            echo $response;
+            exit();
+        }
     }
 
     /**
@@ -100,13 +89,81 @@ class Authentication
      *
      * @param $origin
      *      The origin of the domain.
-     * @throws ConnectionFailedException
-     *      Throws an exception if the connection failed.
-     * @throws NullException
-     *      Throws an exception if there was no domain found.
      */
     public function setDomainById($origin)
     {
-        $this->domain = Db::getSingleRecordByField("domains", "Domain", "origin", $origin);
+        try {
+            $this->domain = Db::getSingleRecordByField("domains", "Domain", "origin", $origin);
+        } catch (NullException $e) {
+            echo ResponseJson::createFailedResponseMessage("Origin not found.");
+            exit();
+        } catch (Exception $e) {
+            echo ResponseJson::createFailedResponseMessage($e->getMessage());
+            exit();
+        }
+    }
+
+    /**
+     * Checks if the api key from the user is the same as the key in the database.
+     * NOTE: Domain must be set.
+     *
+     * @param $userKey
+     *      The api key from the user.
+     * @return bool
+     *      Returns true if the id is the same. Otherwise it returns false.
+     * @throws NullException
+     *      Throws an exception if the domain is not set.
+     */
+    private function checkApiKey($userKey)
+    {
+        if ($this->getDomain() == null) {
+            Throw new NullException("Domain has not been set.");
+        }
+
+        return $this->getDomain()["ApiKey"] == $userKey;
+    }
+
+    /**
+     * Checks if the domain has a high enough level to do the rest method.
+     * NOTE: Domain must be set.
+     *
+     * @param $restMethod
+     *      The method of the api level.
+     *      This is GET, POST, PUT or DELETE.
+     * @return bool
+     *      Returns true if it can access the method.
+     * @throws NullException
+     *      Throws an exception if the domain is not set.
+     */
+    private function checkLevel($restMethod)
+    {
+        if ($this->getDomain() == null) {
+            Throw new NullException("Domain has not been set.");
+        }
+
+        $methodLevel = self::getMethodLevel($restMethod);
+
+        return $methodLevel <= $this->getDomain()["Level"];
+    }
+
+    /**
+     * Gets the level of the rest method.
+     *
+     * @param $restMethod
+     *      The rest method of which you want the level of.
+     * @return int
+     *      Returns the level of the method.
+     */
+    private function getMethodLevel($restMethod)
+    {
+        if ($restMethod == "GET") {
+            return 1;
+        } else if ($restMethod == "POST" || $restMethod == "PUT") {
+            return 2;
+        } else if ($restMethod == "DELETE") {
+            return 3;
+        } else {
+            return 99;
+        }
     }
 }
