@@ -14,6 +14,9 @@ class Authentication
     private $domain;
     public $headers;
 
+    /**
+     * Authentication constructor.
+     */
     public function __construct()
     {
         $this->domain = new Domain();
@@ -21,7 +24,7 @@ class Authentication
     }
 
     /**
-     * Checks if all authentication is set.
+     * Checks if the api key is correct to the origin.
      */
     public function verifyApiKey()
     {
@@ -42,6 +45,9 @@ class Authentication
         }
     }
 
+    /**
+     * Checks if the origin has enough authorization.
+     */
     public function verifyLevel()
     {
         $restMethod = $_SERVER['REQUEST_METHOD'];
