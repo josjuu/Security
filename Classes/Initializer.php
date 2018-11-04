@@ -3,6 +3,7 @@ include_once 'Db.php';
 include_once 'Exceptions.php';
 include_once 'ResponseJson.php';
 include_once 'Authentication.php';
+include_once 'Jwt.php';
 include_once '../../Models/Movie.php';
 include_once '../../Models/Location.php';
 include_once '../../Models/MovieTime.php';
