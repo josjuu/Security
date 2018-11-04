@@ -18,7 +18,6 @@ class Authentication
     {
         $this->domain = new Domain();
         $this->headers = apache_request_headers();
-        //TODO: Check if all headers are set.
     }
 
     /**
