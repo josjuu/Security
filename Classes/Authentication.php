@@ -70,6 +70,28 @@ class Authentication
     }
 
     /**
+     * Checks if the jwt token has a valid jwt token.
+     */
+    public function verifyJwt()
+    {
+        $jwt = $this->headers["jwtToken"];
+        $response = false;
+
+        try {
+            if (!$this->checkJwtToken($jwt)) {
+                $response = ResponseJson::createFailedResponseMessage("Jwt token was invalid.");
+            }
+        } catch (Exception $e) {
+            $response = ResponseJson::createFailedResponseMessage($e->getMessage());
+        }
+
+        if (isset($response)) {
+            echo $response;
+            exit();
+        }
+    }
+
+    /**
      * Gets the key for jwt.
      *
      * @return string
