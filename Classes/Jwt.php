@@ -1,5 +1,4 @@
 <?php
-
 /**
  * JSON Web Token implementation, based on this spec:
  * http://tools.ietf.org/html/draft-ietf-oauth-json-web-token-06
@@ -13,7 +12,7 @@
  * @license  http://opensource.org/licenses/BSD-3-Clause 3-clause BSD
  * @link     https://github.com/firebase/php-jwt
  */
-class Jwt
+class JWT
 {
     /**
      * Decodes a JWT string into a PHP object.
@@ -53,88 +52,6 @@ class Jwt
         }
         return $payload;
     }
-
-    /**
-     * Decode a JSON string into a PHP object.
-     *
-     * @param string $input JSON string
-     *
-     * @return object          Object representation of JSON string
-     * @throws DomainException Provided string was invalid JSON
-     */
-    public static function jsonDecode($input)
-    {
-        $obj = json_decode($input);
-        if (function_exists('json_last_error') && $errno = json_last_error()) {
-            JWT::_handleJsonError($errno);
-        } else if ($obj === null && $input !== 'null') {
-            throw new DomainException('Null result with non-null input');
-        }
-        return $obj;
-    }
-
-    /**
-     * Helper method to create a JSON error.
-     *
-     * @param int $errno An error number from json_last_error()
-     *
-     * @return void
-     */
-    private static function _handleJsonError($errno)
-    {
-        $messages = array(
-            JSON_ERROR_DEPTH => 'Maximum stack depth exceeded',
-            JSON_ERROR_CTRL_CHAR => 'Unexpected control character found',
-            JSON_ERROR_SYNTAX => 'Syntax error, malformed JSON'
-        );
-        throw new DomainException(
-            isset($messages[$errno])
-                ? $messages[$errno]
-                : 'Unknown JSON error: ' . $errno
-        );
-    }
-
-    /**
-     * Decode a string with URL-safe Base64.
-     *
-     * @param string $input A Base64 encoded string
-     *
-     * @return string A decoded string
-     */
-    public static function urlsafeB64Decode($input)
-    {
-        $remainder = strlen($input) % 4;
-        if ($remainder) {
-            $padlen = 4 - $remainder;
-            $input .= str_repeat('=', $padlen);
-        }
-        return base64_decode(strtr($input, '-_', '+/'));
-    }
-
-    /**
-     * Sign a string with a given key and algorithm.
-     *
-     * @param string $msg The message to sign
-     * @param string $key The secret key
-     * @param string $method The signing algorithm. Supported
-     *                       algorithms are 'HS256', 'HS384' and 'HS512'
-     *
-     * @return string          An encrypted message
-     * @throws DomainException Unsupported algorithm was specified
-     */
-    public static function sign($msg, $key, $method = 'HS256')
-    {
-        $methods = array(
-            'HS256' => 'sha256',
-            'HS384' => 'sha384',
-            'HS512' => 'sha512',
-        );
-        if (empty($methods[$method])) {
-            throw new DomainException('Algorithm not supported');
-        }
-        return hash_hmac($methods[$method], $msg, $key, true);
-    }
-
     /**
      * Converts and signs a PHP object or array into a JWT string.
      *
@@ -160,17 +77,46 @@ class Jwt
     }
 
     /**
-     * Encode a string with URL-safe Base64.
+     * Sign a string with a given key and algorithm.
      *
-     * @param string $input The string you want encoded
+     * @param string $msg The message to sign
+     * @param string $key The secret key
+     * @param string $method The signing algorithm. Supported
+     *                       algorithms are 'HS256', 'HS384' and 'HS512'
      *
-     * @return string The base64 encode of what you passed in
+     * @return string          An encrypted message
+     * @throws DomainException Unsupported algorithm was specified
      */
-    public static function urlsafeB64Encode($input)
+    public static function sign($msg, $key, $method = 'HS256')
     {
-        return str_replace('=', '', strtr(base64_encode($input), '+/', '-_'));
+        $methods = array(
+            'HS256' => 'sha256',
+            'HS384' => 'sha384',
+            'HS512' => 'sha512',
+        );
+        if (empty($methods[$method])) {
+            throw new DomainException('Algorithm not supported');
+        }
+        return hash_hmac($methods[$method], $msg, $key, true);
     }
-
+    /**
+     * Decode a JSON string into a PHP object.
+     *
+     * @param string $input JSON string
+     *
+     * @return object          Object representation of JSON string
+     * @throws DomainException Provided string was invalid JSON
+     */
+    public static function jsonDecode($input)
+    {
+        $obj = json_decode($input);
+        if (function_exists('json_last_error') && $errno = json_last_error()) {
+            JWT::_handleJsonError($errno);
+        } else if ($obj === null && $input !== 'null') {
+            throw new DomainException('Null result with non-null input');
+        }
+        return $obj;
+    }
     /**
      * Encode a PHP object into a JSON string.
      *
@@ -188,5 +134,55 @@ class Jwt
             throw new DomainException('Null result with non-null input');
         }
         return $json;
+    }
+
+    /**
+     * Decode a string with URL-safe Base64.
+     *
+     * @param string $input A Base64 encoded string
+     *
+     * @return string A decoded string
+     */
+    public static function urlsafeB64Decode($input)
+    {
+        $remainder = strlen($input) % 4;
+        if ($remainder) {
+            $padlen = 4 - $remainder;
+            $input .= str_repeat('=', $padlen);
+        }
+        return base64_decode(strtr($input, '-_', '+/'));
+    }
+
+    /**
+     * Encode a string with URL-safe Base64.
+     *
+     * @param string $input The string you want encoded
+     *
+     * @return string The base64 encode of what you passed in
+     */
+    public static function urlsafeB64Encode($input)
+    {
+        return str_replace('=', '', strtr(base64_encode($input), '+/', '-_'));
+    }
+
+    /**
+     * Helper method to create a JSON error.
+     *
+     * @param int $errno An error number from json_last_error()
+     *
+     * @return void
+     */
+    private static function _handleJsonError($errno)
+    {
+        $messages = array(
+            JSON_ERROR_DEPTH => 'Maximum stack depth exceeded',
+            JSON_ERROR_CTRL_CHAR => 'Unexpected control character found',
+            JSON_ERROR_SYNTAX => 'Syntax error, malformed JSON'
+        );
+        throw new DomainException(
+            isset($messages[$errno])
+                ? $messages[$errno]
+                : 'Unknown JSON error: ' . $errno
+        );
     }
 }

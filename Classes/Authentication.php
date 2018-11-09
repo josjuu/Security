@@ -11,6 +11,7 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 
 class Authentication
 {
+    private $secretKey;
     private $domain;
     public $headers;
 
@@ -21,6 +22,7 @@ class Authentication
     {
         $this->domain = new Domain();
         $this->headers = apache_request_headers();
+        $this->secretKey = "C5D91318953742A2628EBEDE7F2C2";
     }
 
     /**
@@ -65,6 +67,17 @@ class Authentication
             echo $response;
             exit();
         }
+    }
+
+    /**
+     * Gets the key for jwt.
+     *
+     * @return string
+     *      The key for jwt.
+     */
+    public function getKey()
+    {
+        return $this->secretKey;
     }
 
     /**
@@ -149,6 +162,37 @@ class Authentication
         $methodLevel = self::getMethodLevel($restMethod);
 
         return $methodLevel <= $this->getDomain()["Level"];
+    }
+
+    /**
+     * Checks if the jwt token is correct.
+     *
+     * @param $jwtToken
+     *      The jwt token.
+     * @return bool
+     *      Returns true if the payloads is correct with what it should be.
+     * @throws NullException
+     *      Throws an exception if the domain isn't set or the payload isn't set.
+     * @throws ValidationException
+     *      Throws an exception if the jwt validation went wrong.
+     */
+    private function checkJwtToken($jwtToken)
+    {
+        if ($this->getDomain() == null) {
+            Throw new NullException("Domain has not been set.");
+        }
+
+        try {
+            $jsonResponse = jwt::decode($jwtToken, "", true);
+        } catch (Exception $e) {
+            throw new ValidationException("The signature was incorrect.");
+        }
+
+        if (!isset($jsonResponse->Origin) || !isset($jsonResponse->ApiKey)) {
+            throw new NullException("Not all the required responses are found.");
+        }
+
+        return $jsonResponse->Origin == $this->getDomain()["Origin"] && $jsonResponse->ApiKey == $this->getDomain()["ApiKey"];
     }
 
     /**

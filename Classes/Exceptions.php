@@ -49,3 +49,8 @@ class NullException extends Exception
         return $message;
     }
 }
+
+class ValidationException extends Exception
+{
+
+}
